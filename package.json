@@ -1,0 +1,18 @@
+{
+    "name": "calendar",
+    "version": "1.0.0",
+    "main": "index.js",
+    "repository": "https://github.com/DeveloperYB/calendar.git",
+    "author": "YouBeen Kim <qlqjsk@gmail.com>",
+    "license": "MIT",
+    "dependencies": {
+        "jquery": "^3.3.1",
+        "moment": "^2.24.0"
+    },
+    "devDependencies": {
+        "parcel-bundler": "^1.11.0"
+    },
+    "scripts": {
+        "start": "parcel ./src/index.html"
+    }
+}
