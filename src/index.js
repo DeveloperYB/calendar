@@ -1,5 +1,13 @@
-import view from './js/view';
-import './css/reset.css';
-import './css/main.css';
+// import Model from './js/Model';
+// import Controller from './js/Controller';
+// import View from './js/View';
 
-view();
+// const appRender = () => {
+//     var model = new Model();
+//     var controller = new Controller(model);
+//     var view = new View(controller);
+// };
+
+// window.addEventListener('load', () => {
+//     appRender();
+// });

@@ -1,10 +1,18 @@
-import jquery from 'jquery';
-import moment from 'moment';
-import './controller';
-import modle from './model';
-window.$ = window.jQuery = jquery;
+function View(controller) {
+    this.controller = controller;
+    this.heading = document.getElementById('heading');
+    this.heading.innerText = controller.getModelHeading();
+    this.heading.addEventListener('click', controller);
 
-export default () => {
-    console.log(modle);
-    $('#root').html('ㅋ?ㅋㅋㅋ?');
-};
+    this.update = function(data) {
+        this.heading.innerText = data.heading;
+    };
+
+    this.controller.model.registerObserver(this);
+}
+
+export default class Controller {
+    constructor(model) {
+        this.model = model;
+    }
+}

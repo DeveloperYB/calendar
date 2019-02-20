@@ -6,13 +6,15 @@
     "author": "YouBeen Kim <qlqjsk@gmail.com>",
     "license": "MIT",
     "dependencies": {
+        "@babel/preset-env": "^7.3.1",
         "jquery": "^3.3.1",
         "moment": "^2.24.0"
     },
     "devDependencies": {
+        "@babel/core": "^7.3.3",
         "parcel-bundler": "^1.11.0"
     },
     "scripts": {
-        "start": "parcel ./src/index.html"
+        "start": "parcel ./index.html"
     }
 }
