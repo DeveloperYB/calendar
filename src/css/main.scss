@@ -1,0 +1,135 @@
+.hide {
+    display: none !important;
+}
+.cb_clear:before,
+.cb_clear:after {
+    content: '\0020';
+    display: block;
+    overflow: hidden;
+    visibility: hidden;
+    width: 0;
+    height: 0;
+}
+.cb_clear:after {
+    clear: both;
+}
+.cb_clear {
+    zoom: 1;
+}
+.fll {
+    float: left !important;
+}
+.flr {
+    float: right !important;
+}
+body {
+    position: relative;
+    background-color: #f7f5f3;
+    #root {
+        min-width: 700px;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding-top: 2%;
+        #head {
+            .selectedDate {
+                line-height: 30px;
+                font-size: 1.2rem;
+            }
+            > div {
+                line-height: 30px;
+                width: 21%;
+                padding: 0 2%;
+                float: left;
+                button.btn {
+                    padding: 0 10px;
+                    line-height: 1.5;
+                    height: 30px;
+                    cursor: pointer;
+                    &.active {
+                        background: #ffff00;
+                    }
+                }
+                &.flr {
+                    text-align: right;
+                }
+            }
+        }
+        #popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            width: 100%;
+            height: 100%;
+            font-size: 0.8rem;
+            &.addNew {
+                .editing {
+                    display: none;
+                }
+            }
+            &.editing {
+                .addNew {
+                    display: none;
+                }
+            }
+            .bg {
+                position: absolute;
+                top: 0;
+                left: 0;
+                background: rgba(0, 0, 0, 0.4);
+                width: 100%;
+                height: 100%;
+            }
+            .contents {
+                width: 40%;
+                max-width: 400px;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                padding: 12px;
+                border: 1px solid #ffff00;
+                background: #ffff00;
+                .head {
+                    background: #ffff00;
+                    padding: 5px 2px;
+                    .fll {
+                        font-weight: bold;
+                    }
+                }
+                .body {
+                    padding: 15px;
+                    background: #fff;
+                    td {
+                        padding-bottom: 5px;
+                        vertical-align: middle;
+                    }
+                    input,
+                    textarea {
+                        width: 100%;
+                        box-sizing: border-box;
+                        border: 1px solid #ccc;
+                        padding: 3px;
+                        line-height: 1.2;
+                    }
+                    textarea {
+                        height: 200px;
+                        resize: none;
+                    }
+                }
+                .footer {
+                    padding-top: 10px;
+                    .btn {
+                        width: 48%;
+                        padding: 5px 0;
+                        margin: 0 1%;
+                        &.save {
+                            margin: 0;
+                            width: 100%;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

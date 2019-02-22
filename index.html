@@ -11,12 +11,74 @@
     </head>
     <body>
         <script src="./src/index.js"></script>
-        <!-- <div class="form">
-            <input id="test" type="text" class="form-control result" />
-            <button type="button" class="btn-increase">+</button>
-            <button type="button" class="btn-decrease">-</button>
-        </div> -->
-        <h1 id="heading"></h1>
-        <div id="root"></div>
+        <div id="root">
+            <div id="head" class="cb_clear">
+                <div class="selectedDate"></div>
+                <div class="btnsWrap">
+                    <button class="btn btnLeft" type="button"><</button>
+                    <button class="btn btnRight" type="button">></button>
+                    <button class="btn btnRight" type="button">오늘</button>
+                </div>
+                <div class="btnsWrap cycleBtns">
+                    <button class="btn monthly" data-cycle="month" type="button">월간</button>
+                    <button class="btn weekly" data-cycle="week" type="button">주간</button>
+                    <button class="btn daily" data-cycle="day" type="button">일간</button>
+                </div>
+                <div class="btnsWrap flr">
+                    <button class="btn addNote" type="button">일정추가</button>
+                </div>
+            </div>
+            <div id="calendar"></div>
+            <!-- <div id="foot"></div> -->
+            
+            <div id="popup" class="addNew hide">
+                <div class="bg"></div>
+                <div class="contents">
+                    <div class="head">
+                        <div class="addNew cb_clear">
+                            <div class="fll">일정추가</div>
+                            <div class="flr"><button class="btn close" type="button">X</button></div>
+                        </div>
+                        <div class="editing cb_clear">
+                            <div class="fll">일정</div>
+                            <div class="flr"><button class="btn close" type="button">X</button></div>
+                        </div>
+                    </div>
+                    <div class="body">
+                        <table style="width:100%">
+                            <colgroup>
+                                <col width="20%"/>
+                                <col width="80%"/>
+                            </colgroup>
+                            <tr>
+                                <td>제목</td>
+                                <td><input class="title" value=""/></td>
+                            </tr>
+                            <tr>
+                                <td>시작일시</td>
+                                <td><input placeholder="yyyy-mm-dd-hh" class="startDate" value=""/></td>
+                            </tr>
+                            <tr>
+                                <td>종료일시</td>
+                                <td><input placeholder="yyyy-mm-dd-hh" class="endDate" value=""/></td>
+                            </tr>
+                            <tr>
+                                <td style="padding-top:10px; vertical-align: top;">제목</td>
+                                <td><textarea class="memo" value=""/></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="footer">
+                        <div class="addNew">
+                            <button class="btn save" type="button">저장</button>
+                        </div>
+                        <div class="editing cb_clear">
+                            <button class="btn del fll" type="button">삭제</button>
+                            <button class="btn edit fll" type="button">수정</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </body>
 </html>

@@ -1,24 +1,30 @@
-export default class Controller {
-    constructor(model) {
+class Controller {
+    constructor(model, view) {
+        // this.model = model;
+        // console.log(this);
+        this.view = view;
         this.model = model;
-        this.handleEvent = this.handleEvent.bind(this);
-        this.getModelHeading = this.getModelHeading.bind(this);
-        this.clickHandler = this.clickHandler.bind(this);
+        this.init = this.init.bind(this);
+        this.setState = this.setState.bind(this);
+        console.log(model, view, this);
     }
-    handleEvent(e) {
-        e.stopPropagation();
-        switch (e.type) {
-            case 'click':
-                this.clickHandler(e.target);
-                break;
-            default:
-                console.log(e.target);
+    init() {
+        const { state } = this.model;
+        const self = this;
+        this.view.render(state);
+        this.view.addActions({
+            flagChange
+        });
+        function flagChange(flag) {
+            self.setState('flag', flag);
         }
     }
-    getModelHeading() {
-        return this.model.heading;
-    }
-    clickHandler(target) {
-        this.model.changeHeading();
+    setState(key, val) {
+        const { setState, state } = this.model;
+        const initState = { ...state, [key]: val };
+        setState(initState);
+        this.view.render(this.model.state);
     }
 }
+
+export default Controller;

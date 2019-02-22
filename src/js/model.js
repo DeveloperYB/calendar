@@ -26,83 +26,18 @@ if (!saveData) {
     saveData = {};
 } else saveData = JSON.parse(saveData);
 const now = moment();
-const initState = {
-    saveData,
-    now,
-    timeStamp: now.format('X'),
-    format: now.format('YYYY-MM-DD'),
-    value: 100
-};
-
-function Model() {
-    var self = this;
-    var state = new HeadingState();
-    var heading = state.getValue();
-
-    // Observer pattern
-    this.observers = [];
-    this.registerObserver = function(observer) {
-        self.observers.push(observer);
-    };
-    this.notifyAll = function() {
-        self.observers.forEach(function(observer) {
-            observer.update(self);
-        });
-    };
-
-    this.changeHeading = function() {
-        console.log('change heading');
-        state.changeState();
-        self.heading = state.getValue();
-    };
-
-    Object.defineProperty(this, 'heading', {
-        get: function() {
-            return heading;
-        },
-        set: function(value) {
-            heading = value;
-            this.notifyAll();
-        }
-    });
-}
-
-export default class Model {
-    constructer() {
-        this.state = initState;
+class Model {
+    constructor() {
+        //initState
+        this.state = {
+            saveData,
+            now,
+            flag: 'month' // month,week,day
+        };
+        this.setState = this.setState.bind(this);
     }
-    HeadingState() {
-        var self = this;
-        this.state = new HelloState(self);
-        this.changeState = function() {
-            self.state.next();
-        };
-        this.getValue = function() {
-            return self.state.value;
-        };
-    }
-    // State
-    HelloState(container) {
-        var self = this;
-        this.container = container;
-        this.value = 'Hello';
-        container.state = this;
-
-        // Implementing interface
-        this.next = function() {
-            return new WorldState(self.container);
-        };
-    }
-    // State
-    WorldState(container) {
-        var self = this;
-        this.container = container;
-        this.value = 'World';
-        container.state = this;
-
-        // Implementing interface
-        this.next = function() {
-            return new HelloState(self.container);
-        };
+    setState(val) {
+        this.state = val;
     }
 }
+export default Model;
