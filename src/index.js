@@ -1,13 +1,12 @@
+import jquery from 'jquery';
+
 import Model from './js/Model';
 import Controller from './js/Controller';
 import View from './js/View';
-import jquery from 'jquery';
-import moment from 'moment';
 //Reset CSS, SCSS
 import './css/main.scss';
 import './css/reset.css';
 window.$ = window.jQuery = jquery;
-window.moment = moment;
 
 const model = new Model();
 const view = new View();
