@@ -29,7 +29,10 @@ const timeFromIdx = idx => {
     let text = '';
     if (idx <= 12) text += '오전 ';
     else text += '오후 ';
-    text += `${idx}시<br/>`;
+
+    if (idx > 12) text += `${idx - 12}시<br/>`;
+    else text += `${idx}시<br/>`;
+
     if (idx < 10) {
         text += `(0${idx}:00)`;
     } else {
@@ -97,7 +100,6 @@ class View {
         $('#popup .footer .save, #popup .footer .edit, #popup .footer .del').on('click', e => {
             // const type = $()
             const type = $(e.target).data('type');
-            const dataTimeRange = [];
             let data = {
                 colorChip: $('#popup select.selColor').val(),
                 title: $('#popup input.title').val(),
@@ -121,17 +123,17 @@ class View {
             } else {
                 data.startTime[1] = data.startTime[1] - 1;
                 data.endTime[1] = data.endTime[1] - 1;
-                dataTimeRange[0] = Number(
+                data.startTime = Number(
                     moment(data.startTime)
                         .clone()
                         .format('x')
                 );
-                dataTimeRange[1] = Number(
+                data.endTime = Number(
                     moment(data.endTime)
                         .clone()
                         .format('x')
                 );
-                if (dataTimeRange[0] > dataTimeRange[1]) {
+                if (data.startTime > data.endTime) {
                     alert('시작일시가 종료일시보다 이전이어야 합니다.');
                     return;
                 } else if (!data.title) {
@@ -143,7 +145,21 @@ class View {
                 }
             }
             //flag, key, value
-            ucdMemoModal(type, dataTimeRange[0] + '|' + dataTimeRange[1], data);
+            ucdMemoModal(
+                type,
+                data.startTime
+                    .hour(0)
+                    .minute(0)
+                    .second(0)
+                    .millisecond(0) +
+                    '|' +
+                    data.endTime
+                        .hour(0)
+                        .minute(0)
+                        .second(0)
+                        .millisecond(0),
+                data
+            );
         });
         //날짜 변환 버튼
         $('.editTimeBtns .btn').each((i, v) => {
@@ -305,7 +321,7 @@ class View {
             const $row = $(`<div class="row" data-week="${weekData.week}">`);
             if (flag === 'week' || flag === 'day') {
                 const $col = $(`<div class="col blank">`);
-                $col.html('<span>시간/날짜</span>');
+                $col.html('<div>시간/날짜</div>');
                 $row.append($col);
             }
             for (let d = 0; d < weekData.days.length; d++) {
@@ -323,8 +339,8 @@ class View {
                 );
                 //날짜 가 적혀있는 콜에 모달 팝업 Fn넣기
                 $col.on('click', () => {
-                    setTimeInput('startDate', false, [day.year(), dayMonth, date, 1]);
-                    setTimeInput('endDate', false, [day.year(), dayMonth, date, 1]);
+                    setTimeInput('startDate', false, [day.year(), dayMonth + 1, date, 1]);
+                    setTimeInput('endDate', false, [day.year(), dayMonth + 1, date, 1]);
                     this.addModal();
                 });
                 if (dayNum === 0) {
@@ -346,18 +362,30 @@ class View {
             $Cbody.append($row);
         }
         if (flag === 'week' || flag === 'day') {
-            let colLoop = 8;
-            if (flag === 'day') colLoop = 2;
+            let colLoop = 6;
+            if (flag === 'day') colLoop = 0;
             for (let time = 1; time < 25; time++) {
                 const $row = $(`<div class="row" data-week="${showArr[0].week}">`);
                 //timeFromIdx
-                for (let colIdx = 1; colIdx <= colLoop; colIdx++) {
+                for (let colIdx = -1; colIdx <= colLoop; colIdx++) {
                     const $col = $(`<div class="col">`);
-                    if (colIdx === 1) {
+                    if (colIdx === -1) {
                         $col.html(`<div class="">${timeFromIdx(time)}</div>`);
                         $col.addClass('timeTxt');
                     } else {
+                        const day = showArr[0].days[colIdx].clone();
+                        const timeStamp = day.format('x');
+                        const dayNum = day.day();
+                        const date = day.date();
+                        const dayMonth = day.month();
                         $col.on('click', () => {
+                            setTimeInput('startDate', false, [
+                                day.year(),
+                                dayMonth + 1,
+                                date,
+                                time
+                            ]);
+                            setTimeInput('endDate', false, [day.year(), dayMonth + 1, date, time]);
                             this.addModal();
                         });
                     }
@@ -394,10 +422,10 @@ class View {
                         } else $(v).val(arr[i]);
                     });
                 //시작일시,종료일시 부분 초기화
-                if (arr[3] && !chk) {
+                if (arr[3]) {
                     $(t)
                         .find('select')
-                        .val('1');
+                        .val(!chk ? 1 : arr[3]);
                 }
                 return chk;
             };

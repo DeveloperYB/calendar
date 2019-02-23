@@ -114,7 +114,7 @@ body {
                 }
             }
         }
-        //캘린더
+
         #calendar {
             padding: 1%;
             box-sizing: border-box;
@@ -159,28 +159,23 @@ body {
                 &.week,
                 &.day {
                     .row .col {
-                        height: 30px;
                         .dateBadge {
-                            padding: 0;
-                            top: 50%;
-                            left: 50%;
-                            transform: translate(-50%, -46%);
                         }
                         &.blank {
-                            line-height: 32px;
-                            background: #ddd;
                             font-weight: bold;
                             font-size: 1rem;
                             text-align: center;
                             vertical-align: middle;
                         }
                         &.timeTxt {
-                            background: #ddd;
-                            font-size: 0.8rem;
-                            height: 24px !important;
-                            line-height: 12px;
-                            padding: 3px 0;
                             text-align: center;
+                        }
+                        &.blank,
+                        &.timeTxt {
+                            background: #ddd !important;
+                            div {
+                                padding-top: 10px;
+                            }
                         }
                     }
                 }
@@ -198,13 +193,17 @@ body {
                         position: relative;
                         height: 100px;
                         cursor: pointer;
+                        &:hover {
+                            background: rgba(232, 196, 137, 0.4) !important;
+                        }
                         &.timeTxt {
                             cursor: default;
+                            background: #ddd !important;
                         }
                         .dateBadge {
                             position: absolute;
-                            top: 8%;
-                            left: 6%;
+                            top: 5px;
+                            left: 5px;
                             font-size: 1.2rem;
                             padding: 5px;
                             cursor: pointer;
