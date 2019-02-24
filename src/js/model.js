@@ -13,8 +13,8 @@ window.moment = moment;
 
 let saveData = localStorage.getItem('saveData');
 if (!saveData) {
-    localStorage.setItem('saveData', JSON.stringify({}));
-    saveData = {};
+    localStorage.setItem('saveData', JSON.stringify([]));
+    saveData = [];
 } else saveData = JSON.parse(saveData);
 const now = moment()
     .hour(0)
@@ -31,8 +31,8 @@ class Model {
             flag: 'month', // month,week,day
             showArr: [],
             selDate: ['', '', ''],
-            startDate: ['', '', '', 1],
-            endDate: ['', '', '', 1]
+            startDate: ['', '', '', 0],
+            endDate: ['', '', '', 0]
         };
         this.setState = this.setState.bind(this);
         this.getMonthlyArr = this.getMonthlyArr.bind(this);

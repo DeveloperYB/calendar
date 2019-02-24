@@ -71,7 +71,7 @@ const showDateRange = (now, flag, today) => {
             }
         }
     } else if (flag === 'day') {
-        html = now.format('YYYY년MM월DD알');
+        html = now.format('YYYY년MM월DD일');
     }
     if (!sameDate) {
         html += `<div class="sel">Selected Day : (${now.format('YYYY년MM월DD일')})</div>`;
@@ -100,6 +100,7 @@ class View {
         $('#popup .footer .save, #popup .footer .edit, #popup .footer .del').on('click', e => {
             // const type = $()
             const type = $(e.target).data('type');
+            const dataKey = Number($('#popup input.keyIdx').val());
             let data = {
                 colorChip: $('#popup select.selColor').val(),
                 title: $('#popup input.title').val(),
@@ -123,16 +124,8 @@ class View {
             } else {
                 data.startTime[1] = data.startTime[1] - 1;
                 data.endTime[1] = data.endTime[1] - 1;
-                data.startTime = Number(
-                    moment(data.startTime)
-                        .clone()
-                        .format('x')
-                );
-                data.endTime = Number(
-                    moment(data.endTime)
-                        .clone()
-                        .format('x')
-                );
+                data.startTime = Number(moment(data.startTime).format('x'));
+                data.endTime = Number(moment(data.endTime).format('x'));
                 if (data.startTime > data.endTime) {
                     alert('시작일시가 종료일시보다 이전이어야 합니다.');
                     return;
@@ -144,22 +137,20 @@ class View {
                     return;
                 }
             }
-            //flag, key, value
-            ucdMemoModal(
-                type,
-                data.startTime
-                    .hour(0)
-                    .minute(0)
-                    .second(0)
-                    .millisecond(0) +
-                    '|' +
-                    data.endTime
-                        .hour(0)
-                        .minute(0)
-                        .second(0)
-                        .millisecond(0),
-                data
-            );
+            //flag, value, idx
+            if (type === 'create') {
+                ucdMemoModal(type, data, null);
+                // newData.push(value);
+            } else if (type === 'update') {
+                //모달에 idx 값 불러오기
+                ucdMemoModal(type, data, dataKey);
+                // newData[idx] = value;
+            } else if (type === 'delete') {
+                //모달에 idx 값 불러오기
+                ucdMemoModal(type, null, dataKey);
+                // newData.splice(idx, 1);
+            }
+            this.addModal();
         });
         //날짜 변환 버튼
         $('.editTimeBtns .btn').each((i, v) => {
@@ -242,13 +233,44 @@ class View {
             this.addModal();
         });
     }
-    addModal() {
+    addModal(data, idx) {
         const { setTimeInput } = this.controllerAct;
         //addNote 일정 추가 버튼
         if (!$('#popup').hasClass('hide')) {
-            $('#popup input').val('');
-            setTimeInput('startDate', false, ['', '', '', 1]);
-            setTimeInput('endDate', false, ['', '', '', 1]);
+            $('#popup select.selColor').val('ivory');
+            $('#popup input.title').val('');
+            $('#popup textarea.content').val('');
+            setTimeInput('startDate', false, ['', '', '', 0]);
+            setTimeInput('endDate', false, ['', '', '', 0]);
+            $('#popup').removeClass('editing');
+            $('#popup').addClass('addNew');
+            $('#popup input.keyIdx').val('');
+        } else {
+            if (data) {
+                const selDataTime = [moment(data.startTime), moment(data.endTime)];
+                $('#popup select.selColor').val(data.colorChip);
+                $('#popup input.title').val(data.title);
+                $('#popup textarea.content').val(data.content);
+                setTimeInput('startDate', false, [
+                    selDataTime[0].year(),
+                    selDataTime[0].month() + 1,
+                    selDataTime[0].date(),
+                    selDataTime[0].hour()
+                ]);
+                setTimeInput('endDate', false, [
+                    selDataTime[1].year(),
+                    selDataTime[1].month() + 1,
+                    selDataTime[1].date(),
+                    selDataTime[1].hour()
+                ]);
+                $('#popup').addClass('editing');
+                $('#popup').removeClass('addNew');
+                $('#popup input.keyIdx').val(idx);
+            } else {
+                $('#popup').removeClass('editing');
+                $('#popup').addClass('addNew');
+                $('#popup input.keyIdx').val('');
+            }
         }
         $('#popup').toggleClass('hide');
     }
@@ -257,17 +279,17 @@ class View {
         const { now, flag, showArr, saveData, today } = state;
         const cloneNow = now.clone();
         const cloneToday = today.clone();
-        //팝업 내부 셀렉 select option채워넣기
+        //팝업 내부 셀렉 select option채워넣기 : 처음만..
         if (!$('#popup .timeSelWrap select option').length) {
+            // console.log(flag, showArr);
+            // console.log('state:\n', state);
             let optHtml = '';
-            for (let t = 1; t <= 24; t++) {
+            for (let t = 0; t <= 24; t++) {
                 optHtml += `<option value="${t}">${t < 10 ? '0' + t : t}시</option>`;
             }
             $('#popup .timeSelWrap select').html(optHtml);
         }
         //현재 셀렉 날짜 보여주기
-        // console.log(flag, showArr);
-        console.log('state:\n', state);
         $('#head .selectedDate').html(showDateRange(cloneNow, flag, cloneToday));
         //월,주,일 버튼
         if ($('.cycleBtns .btn.active')) $('.cycleBtns .btn.active').removeClass('active');
@@ -319,6 +341,11 @@ class View {
         for (let a = 0; a < showArr.length; a++) {
             const weekData = showArr[a];
             const $row = $(`<div class="row" data-week="${weekData.week}">`);
+            // 일정 두는 div 넣기
+            // const firstDayFromWeek = showArr[a].days[0];
+            // $row.append(
+            //     `<div class="memoWrap" id="rowTime_${firstDayFromWeek.format('x')}"></div>`
+            // );
             if (flag === 'week' || flag === 'day') {
                 const $col = $(`<div class="col blank">`);
                 $col.html('<div>시간/날짜</div>');
@@ -331,16 +358,18 @@ class View {
                 const date = day.date();
                 const dayMonth = day.month();
                 // console.log(date, day);
-                const $col = $(`<div class="col">`);
+                const $col = $(`<div class="col dayCol">`);
+                if (d === 0) $col.addClass('firstDayFromWeek');
+                $col.attr('id', `col_time_${timeStamp}`);
                 $col.html(
                     `<div class="${
                         thisMonth === dayMonth ? 'dateBadge' : 'dateBadge noThisMonth'
                     }">${date}</div>`
                 );
                 //날짜 가 적혀있는 콜에 모달 팝업 Fn넣기
-                $col.on('click', () => {
-                    setTimeInput('startDate', false, [day.year(), dayMonth + 1, date, 1]);
-                    setTimeInput('endDate', false, [day.year(), dayMonth + 1, date, 1]);
+                $col.on('click', e => {
+                    setTimeInput('startDate', false, [day.year(), dayMonth + 1, date, 0]);
+                    setTimeInput('endDate', false, [day.year(), dayMonth + 1, date, 0]);
                     this.addModal();
                 });
                 if (dayNum === 0) {
@@ -364,20 +393,24 @@ class View {
         if (flag === 'week' || flag === 'day') {
             let colLoop = 6;
             if (flag === 'day') colLoop = 0;
-            for (let time = 1; time < 25; time++) {
+            for (let time = 0; time < 24; time++) {
                 const $row = $(`<div class="row" data-week="${showArr[0].week}">`);
                 //timeFromIdx
                 for (let colIdx = -1; colIdx <= colLoop; colIdx++) {
                     const $col = $(`<div class="col">`);
                     if (colIdx === -1) {
-                        $col.html(`<div class="">${timeFromIdx(time)}</div>`);
+                        $col.html(`<div class="timeBadge">${timeFromIdx(time)}</div>`);
                         $col.addClass('timeTxt');
                     } else {
                         const day = showArr[0].days[colIdx].clone();
-                        const timeStamp = day.format('x');
+                        const timeStamp = day
+                            .clone()
+                            .hour(time)
+                            .format('x');
                         const dayNum = day.day();
                         const date = day.date();
                         const dayMonth = day.month();
+                        $col.attr('id', `time_${timeStamp}`);
                         $col.on('click', () => {
                             setTimeInput('startDate', false, [
                                 day.year(),
@@ -385,7 +418,12 @@ class View {
                                 date,
                                 time
                             ]);
-                            setTimeInput('endDate', false, [day.year(), dayMonth + 1, date, time]);
+                            setTimeInput('endDate', false, [
+                                day.year(),
+                                dayMonth + 1,
+                                date,
+                                time + 1
+                            ]);
                             this.addModal();
                         });
                     }
@@ -397,6 +435,172 @@ class View {
         $Calendar.append($Cbody);
         //몸통 부분 : 끝
         $('#calendar').html($Calendar);
+        //saveData 순회해서 심기
+        // console.log('saveData:\n', saveData);
+        if (saveData.length) {
+            for (let i = 0; i < saveData.length; i++) {
+                // console.log(saveData[i]);
+                const { colorChip, content, endTime, startTime, title } = saveData[i];
+                const sT = moment(startTime);
+                const startTimeDate = sT.date();
+                const eT = moment(endTime);
+                const startDayTimeStamp = sT
+                    .clone()
+                    .hour(0)
+                    .format('x');
+                const endDayTimeStamp = eT
+                    .clone()
+                    .hour(0)
+                    .format('x');
+                const dayDiff = eT.diff(sT, 'days');
+                // console.log('dayDiff', dayDiff);
+                if (
+                    dayDiff === 0 &&
+                    (flag === 'week' || flag === 'day') &&
+                    (sT.hour() !== 0 || eT.hour() !== 0)
+                ) {
+                    const hourDiff = eT.diff(sT, 'hours');
+                    for (let di = 0; di <= hourDiff; di++) {
+                        let $timeDom = $(`#time_${Number(startTime) + di * 3600000}`);
+                        // if (di) {
+                        //     console.log($timeDom);
+                        //     const memoLength = $timeDom.attr('data-memoLength');
+                        //     if (memoLength) {
+                        //         $timeDom.attr('data-memoLength', Number(memoLength) + 1);
+                        //     } else {
+                        //         $timeDom.attr('data-memoLength', 1);
+                        //     }
+                        // }
+                        if (di === 0 && $timeDom.length) {
+                            const memoLength = $timeDom.attr('data-memoLength');
+                            const $memo = $(`<div class="timeMemo" data-savedataidx="${i}">`);
+                            $memo.attr('data-startDayTimeStamp', startDayTimeStamp);
+                            $memo.attr('data-range', hourDiff);
+                            $memo.html(`<div>${title.substring(0, 10) + '...'}</div>`);
+                            let newMemoLength;
+                            if (memoLength) {
+                                newMemoLength = Number(memoLength) + 1;
+                                $timeDom.attr('data-memoLength', newMemoLength);
+                            } else {
+                                newMemoLength = 1;
+                                $timeDom.attr('data-memoLength', 1);
+                            }
+                            $memo.css({
+                                'background-color': colorChip,
+                                left: Number(20 * (newMemoLength - 1)),
+                                height: Number(112 * hourDiff)
+                            });
+                            $timeDom.append($memo);
+                            $timeDom.addClass('memoExist');
+                        }
+                    }
+                    // console.log(sT.format('YYYY-MM-DD'));
+                    // console.log(eT.format('YYYY-MM-DD'));
+                    // console.log(saveData[i]);
+                    // console.log(eT.diff(sT, 'hours'));
+                }
+                for (let di = 0; di <= dayDiff; di++) {
+                    let $timeDom = $(`#col_time_${Number(startDayTimeStamp) + di * 86400000}`);
+                    // console.log($timeDom, Number(startDayTimeStamp) + di * 86400000);
+                    if ($timeDom.length) {
+                        const memoLength = $timeDom.attr('data-memoLength');
+                        if (memoLength) {
+                            $timeDom.attr('data-memoLength', Number(memoLength) + 1);
+                        } else {
+                            $timeDom.attr('data-memoLength', 1);
+                        }
+                        const $memo = $(`<div class="memo" data-savedataidx="${i}">`);
+                        $memo.attr('data-startDayTimeStamp', startDayTimeStamp);
+                        $memo.attr('data-range', dayDiff);
+                        if (di === 0 || $timeDom.hasClass('firstDayFromWeek')) {
+                            $memo.html(`<div>${title}</div>`);
+                        } else if (!$timeDom.hasClass('firstDayFromWeek')) {
+                            $memo.addClass('ml');
+                        }
+                        $memo.css('background-color', colorChip);
+                        $timeDom.append($memo);
+                        $timeDom.addClass('memoExist');
+                    }
+                }
+            }
+            //saveData bedge order 순회
+            if ($('.body .col.memoExist').length) {
+                $('.body .col.memoExist').each((ei, ev) => {
+                    const $thisCol = $(ev);
+                    if ($thisCol.find('.memo').length >= 1) {
+                        let sortArr = [];
+                        $thisCol.find('.memo').each((mi, mv) => {
+                            const $memo = $(mv);
+                            $memo.attr('id', `${$thisCol.attr('id')}_memo_${mi}`);
+                            const memoObj = {
+                                timeStamp: Number($memo.data('startdaytimestamp')),
+                                range: Number($memo.data('range')),
+                                domId: `#${$memo.attr('id')}`
+                            };
+                            sortArr.push(memoObj);
+                        });
+                        //우선순위
+                        //1. 타임스템프가 작은것 우선
+                        //2. 타임레인지가 큰것 우선
+                        sortArr = [...sortArr].sort(function(a, b) {
+                            if (a['timeStamp'] - b['timeStamp'] !== 0) {
+                                if (a['timeStamp'] - b['timeStamp'] > 1) return 1;
+                                else return -1;
+                            } else {
+                                if (a['range'] - b['range'] > 1) return -1;
+                                else return 1;
+                            }
+                        });
+                        // console.log(sortArr);
+                        const $newDom = $('<div>');
+                        for (let di = 0; di < sortArr.length; di++) {
+                            $newDom.append($(sortArr[di].domId));
+                        }
+                        $thisCol.find('.dateBadge').after($newDom.html());
+                    }
+                });
+                //재정렬 라스트
+                $('.body .col.memoExist').each((ei, ev) => {
+                    const $thisCol = $(ev);
+                    if (!$thisCol.is('.firstDayFromWeek')) {
+                        // console.log('asdfas', $thisCol);
+                        $thisCol.find('.memo').each((mi, mv) => {
+                            const $memo = $(mv);
+                            const savedataidx = $memo.data('savedataidx');
+                            const order = $memo.index();
+                            // const
+                            // console.log($memo);
+                            const $pare = $memo
+                                .closest('.col')
+                                .prev()
+                                .find(`.memo[data-savedataidx="${savedataidx}"]`);
+                            if ($pare.length) {
+                                const pareOrder = $pare.index();
+                                if (order !== pareOrder) {
+                                    // console.log(order, pareOrder);
+                                    for (let a = 1; a <= pareOrder - order; a++) {
+                                        $memo.before('<div class="memo dump">');
+                                    }
+                                }
+                            }
+                        });
+                    }
+                });
+                //evnet add
+                $('.body .col.memoExist .memo, .body .col.memoExist .timeMemo').each((mi, mv) => {
+                    if (!$(mv).hasClass('dump')) {
+                        $(mv).on('click', e => {
+                            e.stopPropagation(); //버블링 차단
+                            const saveIdx = $(mv).data('savedataidx');
+                            const selData = { ...saveData[saveIdx] };
+
+                            // console.log(selData);
+                            this.addModal(selData, saveIdx);
+                        });
+                    }
+                });
+            }
+        }
     }
     dateInputsChk(state) {
         const { selDate, startDate, endDate } = state;
@@ -417,15 +621,15 @@ class View {
                 $(t)
                     .find('input')
                     .each((i, v) => {
-                        if (chk && valArr[i] && i === 1) {
+                        if (chk && valArr[i] !== '' && i === 1) {
                             $(v).val(valArr[i] + 1);
                         } else $(v).val(arr[i]);
                     });
                 //시작일시,종료일시 부분 초기화
-                if (arr[3]) {
+                if (arr[3] !== '') {
                     $(t)
                         .find('select')
-                        .val(!chk ? 1 : arr[3]);
+                        .val(!chk ? 0 : arr[3]);
                 }
                 return chk;
             };

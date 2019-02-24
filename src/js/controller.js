@@ -64,17 +64,20 @@ class Controller {
             alert('시간이 정확하지 않습니다.');
         }
     }
-    ucdMemoModal(flag, key, value) {
+    ucdMemoModal(flag, value, idx) {
         const { render } = this.view;
-        const newData = JSON.parse(JSON.stringify(this.model.state.saveData));
-        if (flag === 'create' || flag === 'update') {
-            newData[key] = value;
-        } else if (flag === 'delete' && newData[key]) {
-            delete newData[key];
+        const newData = [...this.model.state.saveData];
+        if (flag === 'create') {
+            newData.push(value);
+        } else if (flag === 'update') {
+            newData[idx] = value;
+        } else if (flag === 'delete' && newData[idx]) {
+            newData.splice(idx, 1);
         }
         this.setState('saveData', newData);
+        localStorage.setItem('saveData', JSON.stringify(newData));
         //init
-        this.changeArrFromEachFlag();
+        //this.changeArrFromEachFlag();
         render(this.model.state);
     }
     setTimeInput(key, idx, val) {
@@ -84,7 +87,6 @@ class Controller {
             newTimeArr[idx] = val;
             this.setState(key, newTimeArr);
         } else {
-            console.log(key, val);
             this.setState(key, val);
         }
         //init

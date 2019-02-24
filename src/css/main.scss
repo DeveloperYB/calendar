@@ -166,16 +166,24 @@ body {
                             font-size: 1rem;
                             text-align: center;
                             vertical-align: middle;
+                            > div {
+                                padding-top: 10px;
+                            }
                         }
                         &.timeTxt {
                             text-align: center;
+                            position: relative;
+                            .timeBadge {
+                                position: absolute;
+                                top: 0;
+                                left: 50%;
+                                transform: translate(-50%, -50%);
+                                background: #ddd;
+                            }
                         }
                         &.blank,
                         &.timeTxt {
                             background: #ddd !important;
-                            div {
-                                padding-top: 10px;
-                            }
                         }
                     }
                 }
@@ -188,11 +196,67 @@ body {
                 .row {
                     display: flex;
                     .col {
+                        // overflow: hidden;
+                        // display: flex;
+                        // min-width: 0;
+                        // flex-direction: column;
+                        .timeMemo {
+                            width: 20px;
+                            position: absolute;
+                            top: 0;
+                            left: 0;
+                            text-align: center;
+                            cursor: pointer;
+                            z-index: 2;
+                            // height: 17.5px;
+                            // padding: 0 8px;
+                            // line-height: 17.5px;
+                            // font-size: 12px;
+                            // box-sizing: border-box;
+                            // pointer-events: auto;
+                            // overflow: hidden;
+                            // border: 1px solid transparent;
+                            > div {
+                                transform: rotate(90deg);
+                                text-indent: 15px;
+                                pointer-events: none;
+                            }
+                        }
+                        .memo {
+                            height: 17.5px;
+                            padding: 0 8px;
+                            line-height: 17.5px;
+                            font-size: 12px;
+                            box-sizing: border-box;
+                            pointer-events: auto;
+                            overflow: hidden;
+                            border: 1px solid transparent;
+                            cursor: pointer;
+                            &.dump {
+                                pointer-events: none;
+                            }
+                            &.ml {
+                                width: calc(100% + 2px);
+                                margin-left: -2px;
+                            }
+                            div {
+                                white-space: nowrap;
+                                order: 1;
+                                flex: 0 1 auto;
+                                text-overflow: ellipsis;
+                                overflow: hidden;
+                                min-width: 0px;
+                            }
+                        }
                         flex: 1;
                         border: 1px solid #fff;
                         position: relative;
-                        height: 100px;
+                        height: 110px;
                         cursor: pointer;
+                        &.dayCol {
+                            height: 80px;
+                            padding-top: 30px;
+                        }
                         &:hover {
                             background: rgba(232, 196, 137, 0.4) !important;
                         }
@@ -205,7 +269,6 @@ body {
                             top: 5px;
                             left: 5px;
                             font-size: 1.2rem;
-                            padding: 5px;
                             cursor: pointer;
                             &:hover {
                                 color: #ac5bcc !important;
@@ -259,6 +322,7 @@ body {
             }
             .contents {
                 width: 40%;
+                min-width: 320px;
                 max-width: 400px;
                 position: absolute;
                 top: 50%;
