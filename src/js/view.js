@@ -228,6 +228,12 @@ class View {
             }
         });
         //모든 년,월,일 인풋 제한 걸기 ----- 끝
+        $('#popup2 .bg, #popup2 .close').on('click', () => {
+            $('#popup2').toggleClass('hide');
+            if (!$('#popup2').hasClass('hide')) {
+                $('#popup2 .allList').html('');
+            }
+        });
         //addNote 일정 추가 버튼
         $('#addNote, #popup .bg, #popup .close').on('click', () => {
             this.addModal();
@@ -583,6 +589,46 @@ class View {
                                     }
                                 }
                             }
+                        });
+                    }
+                });
+                $('.body .col.memoExist').each((ei, ev) => {
+                    const $thisCol = $(ev);
+                    $thisCol.find('.memo').each((mi, mv) => {
+                        const $memo = $(mv);
+                        if (mi >= 4) {
+                            $memo.hide();
+                        }
+                    });
+                    if ($thisCol.find('.memo').length >= 4) {
+                        $thisCol
+                            .find('.dateBadge')
+                            .after('<div class="allShowMemo">일정모두보기 +</div>');
+
+                        $thisCol.find('.allShowMemo').on('click', e => {
+                            e.stopPropagation(); //버블링 차단
+                            const memeArr = [];
+                            $thisCol.find('.memo').each((i, v) => {
+                                if (!$(v).hasClass('dump')) memeArr.push($(v).data('savedataidx'));
+                            });
+                            console.log(memeArr);
+                            let $listHtml = $('<div>');
+                            for (let a = 0; a < memeArr.length; a++) {
+                                const data = saveData[memeArr[a]];
+                                console.log(saveData, data, memeArr[a]);
+                                const $listDiv = $('<div class="listItem">');
+                                $listDiv.text(`제목:${data.title}`);
+                                $listDiv.on('click', e => {
+                                    e.stopPropagation(); //버블링 차단
+                                    const selData = { ...data };
+                                    $('#popup2').addClass('hide');
+                                    this.addModal(selData, memeArr[a]);
+                                });
+                                $listHtml.append($listDiv);
+                            }
+                            $('#popup2 .allList').html($listHtml);
+                            $('#popup2').removeClass('hide');
+                            console.log(memeArr);
                         });
                     }
                 });
