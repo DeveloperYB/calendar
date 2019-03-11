@@ -1,3 +1,4 @@
+// import HoliydayAPI from './HoliydayAPI';
 class Controller {
     constructor(model, view) {
         // this.model = model;
@@ -14,21 +15,213 @@ class Controller {
         this.ucdMemoModal = this.ucdMemoModal.bind(this);
         this.goTimeWrap = this.goTimeWrap.bind(this);
         this.changeArrFromEachFlag = this.changeArrFromEachFlag.bind(this);
+        this.addActions = this.addActions.bind(this);
+        this.addModal = this.addModal.bind(this);
         this.view.controllerAct = {
-            changeDate: this.changeDate,
-            flagChange: this.flagChange,
             changeNow: this.changeNow,
             setTimeInput: this.setTimeInput,
-            ucdMemoModal: this.ucdMemoModal,
-            goTimeWrap: this.goTimeWrap
+            addModal: this.addModal
         };
     }
     init() {
-        const { render, dateInputsChk, addActions } = this.view;
+        //[[2019,02],[2019,03],[2019,04]]
+        // const test = new HoliydayAPI(
+        //     res => {
+        //         console.log(res);
+        //     },
+        //     [['2019', '02'], ['2019', '03'], ['2019', '04']]
+        // );
+        const { render, dateInputsChk } = this.view;
         dateInputsChk(this.model.state);
         this.changeArrFromEachFlag();
         render(this.model.state);
-        addActions(); //액션 함수 뷰에 추가
+        this.addActions();
+    }
+    addActions() {
+        const { changeDate, flagChange, setTimeInput, ucdMemoModal, goTimeWrap, addModal } = this;
+        //일정추가 버튼
+        $('#popup .footer .save, #popup .footer .edit, #popup .footer .del').on('click', e => {
+            // const type = $()
+            const type = $(e.target).data('type');
+            const dataKey = Number($('#popup input.keyIdx').val());
+            let data = {
+                colorChip: $('#popup select.selColor').val(),
+                title: $('#popup input.title').val(),
+                content: $('#popup textarea.content').val(),
+                startTime: [
+                    Number($('#popup .startDate input.year').val()),
+                    Number($('#popup .startDate input.month').val()),
+                    Number($('#popup .startDate input.day').val()),
+                    Number($('#popup .startDate select.hour').val())
+                ],
+                endTime: [
+                    Number($('#popup .endDate input.year').val()),
+                    Number($('#popup .endDate input.month').val()),
+                    Number($('#popup .endDate input.day').val()),
+                    Number($('#popup .endDate select.hour').val())
+                ]
+            };
+            if ($('#popup .timeSelWrap.error').length) {
+                alert('시간 설정이 잘못되었습니다.');
+                return;
+            } else {
+                data.startTime[1] = data.startTime[1] - 1;
+                data.endTime[1] = data.endTime[1] - 1;
+                data.startTime = Number(moment(data.startTime).format('x'));
+                data.endTime = Number(moment(data.endTime).format('x'));
+                if (data.startTime > data.endTime) {
+                    alert('시작일시가 종료일시보다 이전이어야 합니다.');
+                    return;
+                } else if (!data.title) {
+                    alert('제목이 없습니다.');
+                    return;
+                } else if (!data.content) {
+                    alert('내용이 없습니다.');
+                    return;
+                }
+            }
+            //flag, value, idx
+            if (type === 'create') {
+                ucdMemoModal(type, data, null);
+                // newData.push(value);
+            } else if (type === 'update') {
+                //모달에 idx 값 불러오기
+                ucdMemoModal(type, data, dataKey);
+                // newData[idx] = value;
+            } else if (type === 'delete') {
+                //모달에 idx 값 불러오기
+                ucdMemoModal(type, null, dataKey);
+                // newData.splice(idx, 1);
+            }
+            addModal();
+        });
+        //날짜 변환 버튼
+        $('.editTimeBtns .btn').each((i, v) => {
+            $(v).on('click', () => {
+                let key = $(v).data('key');
+                changeDate(key);
+                $('#goTimeWrap input').val('');
+                setTimeInput('selDate', false, ['', '', '']);
+            });
+        });
+        //월,주,일 버튼
+        $('.cycleBtns .btn').each((i, v) => {
+            $(v).on('click', () => {
+                flagChange($(v).data('cycle'));
+            });
+        });
+        //해당 시간 선택 버튼
+        $('#goThatTime').on('click', () => {
+            if ($('#goTimeWrap .timeSelWrap').hasClass('error')) {
+                alert('시간이 정확하지 않습니다.');
+            } else goTimeWrap();
+        });
+        //모든 년,월,일 인풋 제한 걸기 ----- 시작
+        $('.timeSelWrap input').each((i, v) => {
+            let type = $(v).data('type');
+            let dateType = $(v).data('datetype');
+            if (type === 'year') {
+                $(v).on('change', e => {
+                    if (e.target.value) {
+                        let val = Number(e.target.value.replace(/[^0-9\.]+/g, ''));
+                        if (val < 1800) {
+                            val = 1800;
+                        } else if (val > 3000) {
+                            val = 3000;
+                        }
+                        setTimeInput(dateType, 0, val);
+                        $(v).val(val);
+                    } else {
+                        setTimeInput(dateType, 0, '');
+                        $(v).val('');
+                    }
+                });
+            } else if (type === 'month') {
+                $(v).on('change', e => {
+                    if (e.target.value) {
+                        let val = Number(e.target.value.replace(/[^0-9\.]+/g, ''));
+                        if (val < 1) {
+                            val = 1;
+                        } else if (val > 12) {
+                            val = 12;
+                        }
+                        setTimeInput(dateType, 1, val);
+                        $(v).val(val);
+                    } else {
+                        setTimeInput(dateType, 1, '');
+                        $(v).val('');
+                    }
+                });
+            } else if (type === 'day') {
+                $(v).on('change', e => {
+                    if (e.target.value) {
+                        let val = Number(e.target.value.replace(/[^0-9\.]+/g, ''));
+                        if (val < 1) {
+                            val = 1;
+                        } else if (val > 31) {
+                            val = 31;
+                        }
+                        setTimeInput(dateType, 2, val);
+                        $(v).val(val);
+                    } else {
+                        setTimeInput(dateType, 2, '');
+                        $(v).val('');
+                    }
+                });
+            }
+        });
+        //모든 년,월,일 인풋 제한 걸기 ----- 끝
+        $('#popup2 .bg, #popup2 .close').on('click', () => {
+            $('#popup2').toggleClass('hide');
+            if (!$('#popup2').hasClass('hide')) {
+                $('#popup2 .allList').html('');
+            }
+        });
+        //addNote 일정 추가 버튼
+        $('#addNote, #popup .bg, #popup .close').on('click', () => {
+            addModal();
+        });
+    }
+    addModal(data, idx) {
+        const { setTimeInput } = this;
+        //addNote 일정 추가 버튼
+        if (!$('#popup').hasClass('hide')) {
+            $('#popup select.selColor').val('ivory');
+            $('#popup input.title').val('');
+            $('#popup textarea.content').val('');
+            setTimeInput('startDate', false, ['', '', '', 0]);
+            setTimeInput('endDate', false, ['', '', '', 0]);
+            $('#popup').removeClass('editing');
+            $('#popup').addClass('addNew');
+            $('#popup input.keyIdx').val('');
+        } else {
+            if (data) {
+                const selDataTime = [moment(data.startTime), moment(data.endTime)];
+                $('#popup select.selColor').val(data.colorChip);
+                $('#popup input.title').val(data.title);
+                $('#popup textarea.content').val(data.content);
+                setTimeInput('startDate', false, [
+                    selDataTime[0].year(),
+                    selDataTime[0].month() + 1,
+                    selDataTime[0].date(),
+                    selDataTime[0].hour()
+                ]);
+                setTimeInput('endDate', false, [
+                    selDataTime[1].year(),
+                    selDataTime[1].month() + 1,
+                    selDataTime[1].date(),
+                    selDataTime[1].hour()
+                ]);
+                $('#popup').addClass('editing');
+                $('#popup').removeClass('addNew');
+                $('#popup input.keyIdx').val(idx);
+            } else {
+                $('#popup').removeClass('editing');
+                $('#popup').addClass('addNew');
+                $('#popup input.keyIdx').val('');
+            }
+        }
+        $('#popup').toggleClass('hide');
     }
     goTimeWrap() {
         const { render, dateInputsChk } = this.view;

@@ -85,203 +85,9 @@ class View {
     constructor() {
         this.render = this.render.bind(this);
         this.dateInputsChk = this.dateInputsChk.bind(this);
-        this.addModal = this.addModal.bind(this);
-        this.addActions = this.addActions.bind(this);
-    }
-    addActions() {
-        const {
-            changeDate,
-            flagChange,
-            setTimeInput,
-            ucdMemoModal,
-            goTimeWrap
-        } = this.controllerAct;
-        //일정추가 버튼
-        $('#popup .footer .save, #popup .footer .edit, #popup .footer .del').on('click', e => {
-            // const type = $()
-            const type = $(e.target).data('type');
-            const dataKey = Number($('#popup input.keyIdx').val());
-            let data = {
-                colorChip: $('#popup select.selColor').val(),
-                title: $('#popup input.title').val(),
-                content: $('#popup textarea.content').val(),
-                startTime: [
-                    Number($('#popup .startDate input.year').val()),
-                    Number($('#popup .startDate input.month').val()),
-                    Number($('#popup .startDate input.day').val()),
-                    Number($('#popup .startDate select.hour').val())
-                ],
-                endTime: [
-                    Number($('#popup .endDate input.year').val()),
-                    Number($('#popup .endDate input.month').val()),
-                    Number($('#popup .endDate input.day').val()),
-                    Number($('#popup .endDate select.hour').val())
-                ]
-            };
-            if ($('#popup .timeSelWrap.error').length) {
-                alert('시간 설정이 잘못되었습니다.');
-                return;
-            } else {
-                data.startTime[1] = data.startTime[1] - 1;
-                data.endTime[1] = data.endTime[1] - 1;
-                data.startTime = Number(moment(data.startTime).format('x'));
-                data.endTime = Number(moment(data.endTime).format('x'));
-                if (data.startTime > data.endTime) {
-                    alert('시작일시가 종료일시보다 이전이어야 합니다.');
-                    return;
-                } else if (!data.title) {
-                    alert('제목이 없습니다.');
-                    return;
-                } else if (!data.content) {
-                    alert('내용이 없습니다.');
-                    return;
-                }
-            }
-            //flag, value, idx
-            if (type === 'create') {
-                ucdMemoModal(type, data, null);
-                // newData.push(value);
-            } else if (type === 'update') {
-                //모달에 idx 값 불러오기
-                ucdMemoModal(type, data, dataKey);
-                // newData[idx] = value;
-            } else if (type === 'delete') {
-                //모달에 idx 값 불러오기
-                ucdMemoModal(type, null, dataKey);
-                // newData.splice(idx, 1);
-            }
-            this.addModal();
-        });
-        //날짜 변환 버튼
-        $('.editTimeBtns .btn').each((i, v) => {
-            $(v).on('click', () => {
-                let key = $(v).data('key');
-                changeDate(key);
-                $('#goTimeWrap input').val('');
-                setTimeInput('selDate', false, ['', '', '']);
-            });
-        });
-        //월,주,일 버튼
-        $('.cycleBtns .btn').each((i, v) => {
-            $(v).on('click', () => {
-                flagChange($(v).data('cycle'));
-            });
-        });
-        //해당 시간 선택 버튼
-        $('#goThatTime').on('click', () => {
-            if ($('#goTimeWrap .timeSelWrap').hasClass('error')) {
-                alert('시간이 정확하지 않습니다.');
-            } else goTimeWrap();
-        });
-        //모든 년,월,일 인풋 제한 걸기 ----- 시작
-        $('.timeSelWrap input').each((i, v) => {
-            let type = $(v).data('type');
-            let dateType = $(v).data('datetype');
-            if (type === 'year') {
-                $(v).on('change', e => {
-                    if (e.target.value) {
-                        let val = Number(e.target.value.replace(/[^0-9\.]+/g, ''));
-                        if (val < 1800) {
-                            val = 1800;
-                        } else if (val > 3000) {
-                            val = 3000;
-                        }
-                        setTimeInput(dateType, 0, val);
-                        $(v).val(val);
-                    } else {
-                        setTimeInput(dateType, 0, '');
-                        $(v).val('');
-                    }
-                });
-            } else if (type === 'month') {
-                $(v).on('change', e => {
-                    if (e.target.value) {
-                        let val = Number(e.target.value.replace(/[^0-9\.]+/g, ''));
-                        if (val < 1) {
-                            val = 1;
-                        } else if (val > 12) {
-                            val = 12;
-                        }
-                        setTimeInput(dateType, 1, val);
-                        $(v).val(val);
-                    } else {
-                        setTimeInput(dateType, 1, '');
-                        $(v).val('');
-                    }
-                });
-            } else if (type === 'day') {
-                $(v).on('change', e => {
-                    if (e.target.value) {
-                        let val = Number(e.target.value.replace(/[^0-9\.]+/g, ''));
-                        if (val < 1) {
-                            val = 1;
-                        } else if (val > 31) {
-                            val = 31;
-                        }
-                        setTimeInput(dateType, 2, val);
-                        $(v).val(val);
-                    } else {
-                        setTimeInput(dateType, 2, '');
-                        $(v).val('');
-                    }
-                });
-            }
-        });
-        //모든 년,월,일 인풋 제한 걸기 ----- 끝
-        $('#popup2 .bg, #popup2 .close').on('click', () => {
-            $('#popup2').toggleClass('hide');
-            if (!$('#popup2').hasClass('hide')) {
-                $('#popup2 .allList').html('');
-            }
-        });
-        //addNote 일정 추가 버튼
-        $('#addNote, #popup .bg, #popup .close').on('click', () => {
-            this.addModal();
-        });
-    }
-    addModal(data, idx) {
-        const { setTimeInput } = this.controllerAct;
-        //addNote 일정 추가 버튼
-        if (!$('#popup').hasClass('hide')) {
-            $('#popup select.selColor').val('ivory');
-            $('#popup input.title').val('');
-            $('#popup textarea.content').val('');
-            setTimeInput('startDate', false, ['', '', '', 0]);
-            setTimeInput('endDate', false, ['', '', '', 0]);
-            $('#popup').removeClass('editing');
-            $('#popup').addClass('addNew');
-            $('#popup input.keyIdx').val('');
-        } else {
-            if (data) {
-                const selDataTime = [moment(data.startTime), moment(data.endTime)];
-                $('#popup select.selColor').val(data.colorChip);
-                $('#popup input.title').val(data.title);
-                $('#popup textarea.content').val(data.content);
-                setTimeInput('startDate', false, [
-                    selDataTime[0].year(),
-                    selDataTime[0].month() + 1,
-                    selDataTime[0].date(),
-                    selDataTime[0].hour()
-                ]);
-                setTimeInput('endDate', false, [
-                    selDataTime[1].year(),
-                    selDataTime[1].month() + 1,
-                    selDataTime[1].date(),
-                    selDataTime[1].hour()
-                ]);
-                $('#popup').addClass('editing');
-                $('#popup').removeClass('addNew');
-                $('#popup input.keyIdx').val(idx);
-            } else {
-                $('#popup').removeClass('editing');
-                $('#popup').addClass('addNew');
-                $('#popup input.keyIdx').val('');
-            }
-        }
-        $('#popup').toggleClass('hide');
     }
     render(state) {
-        const { changeNow, setTimeInput } = this.controllerAct;
+        const { changeNow, setTimeInput, addModal } = this.controllerAct;
         const { now, flag, showArr, saveData, today } = state;
         const cloneNow = now.clone();
         const cloneToday = today.clone();
@@ -376,7 +182,7 @@ class View {
                 $col.on('click', e => {
                     setTimeInput('startDate', false, [day.year(), dayMonth + 1, date, 0]);
                     setTimeInput('endDate', false, [day.year(), dayMonth + 1, date, 0]);
-                    this.addModal();
+                    addModal();
                 });
                 if (dayNum === 0) {
                     $col.find('.dateBadge').addClass('sun');
@@ -430,7 +236,7 @@ class View {
                                 date,
                                 time + 1
                             ]);
-                            this.addModal();
+                            addModal();
                         });
                     }
                     $row.append($col);
@@ -520,7 +326,8 @@ class View {
                         $memo.attr('data-range', dayDiff);
                         if (di === 0 || $timeDom.hasClass('firstDayFromWeek')) {
                             $memo.html(`<div>${title}</div>`);
-                        } else if (!$timeDom.hasClass('firstDayFromWeek')) {
+                        }
+                        if (!$timeDom.hasClass('firstDayFromWeek')) {
                             $memo.addClass('ml');
                         }
                         $memo.css('background-color', colorChip);
@@ -566,10 +373,13 @@ class View {
                     }
                 });
                 //재정렬 라스트
+                /**
+                 * 1. 위 솔트되어서 뿌려진 col을 기준으로 덤프를 밀어넣기,
+                 * 2. 위 솔트되어서 뿌려진 col을 바로 하단 col과 자리배치를 바꾸어서 덤프 대신 밀어넣기
+                 */
                 $('.body .col.memoExist').each((ei, ev) => {
                     const $thisCol = $(ev);
                     if (!$thisCol.is('.firstDayFromWeek')) {
-                        // console.log('asdfas', $thisCol);
                         $thisCol.find('.memo').each((mi, mv) => {
                             const $memo = $(mv);
                             const savedataidx = $memo.data('savedataidx');
@@ -580,12 +390,67 @@ class View {
                                 .closest('.col')
                                 .prev()
                                 .find(`.memo[data-savedataidx="${savedataidx}"]`);
+                            const swapElements = (elm1, elm2) => {
+                                var parent1, next1, parent2, next2;
+
+                                parent1 = elm1.parentNode;
+                                next1 = elm1.nextSibling;
+                                parent2 = elm2.parentNode;
+                                next2 = elm2.nextSibling;
+
+                                parent1.insertBefore(elm2, next1);
+                                parent2.insertBefore(elm1, next2);
+                            };
                             if ($pare.length) {
                                 const pareOrder = $pare.index();
                                 if (order !== pareOrder) {
-                                    // console.log(order, pareOrder);
-                                    for (let a = 1; a <= pareOrder - order; a++) {
-                                        $memo.before('<div class="memo dump">');
+                                    if (
+                                        $memo
+                                            .parent()
+                                            .children()
+                                            .eq(pareOrder).length
+                                    ) {
+                                        swapElements(
+                                            $memo[0],
+                                            $memo
+                                                .parent()
+                                                .children()
+                                                .eq(pareOrder)[0]
+                                        );
+                                    } else {
+                                        let needPullOut = pareOrder - order; //아래로 당겨져야할 숫자
+                                        // console.log(needPullOut);
+                                        for (let a = 1; a <= needPullOut; a++) {
+                                            $memo.before('<div class="memo dump">');
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    } else if ($thisCol.closest('.row').prev().length) {
+                        // console.log($thisCol, $thisCol.closest('.row').prev().find('.col').last());
+                        $thisCol.find('.memo').each((mi, mv) => {
+                            const $memo = $(mv);
+                            const savedataidx = $memo.data('savedataidx');
+                            const order = $memo.index();
+                            // const
+                            // console.log($memo);
+                            const $pare = $memo
+                                .closest('.row')
+                                .prev()
+                                .find('.col')
+                                .last()
+                                .find(`.memo[data-savedataidx="${savedataidx}"]`);
+                            if ($pare.length) {
+                                const pareOrder = $pare.index();
+                                if (order !== pareOrder) {
+                                    let needPullOut = pareOrder - order; //아래로 당겨져야할 숫자
+                                    for (let a = 1; a <= needPullOut; a++) {
+                                        if ($memo.next().length) {
+                                            $memo.before($memo.next());
+                                        } else {
+                                            $memo.before('<div class="memo dump">');
+                                        }
                                     }
                                 }
                             }
@@ -600,7 +465,7 @@ class View {
                             $memo.hide();
                         }
                     });
-                    if ($thisCol.find('.memo').length >= 4) {
+                    if ($thisCol.find('.memo').length >= 5) {
                         $thisCol
                             .find('.dateBadge')
                             .after('<div class="allShowMemo">일정모두보기 +</div>');
@@ -611,24 +476,24 @@ class View {
                             $thisCol.find('.memo').each((i, v) => {
                                 if (!$(v).hasClass('dump')) memeArr.push($(v).data('savedataidx'));
                             });
-                            console.log(memeArr);
+                            // console.log(memeArr);
                             let $listHtml = $('<div>');
                             for (let a = 0; a < memeArr.length; a++) {
                                 const data = saveData[memeArr[a]];
-                                console.log(saveData, data, memeArr[a]);
+                                // console.log(saveData, data, memeArr[a]);
                                 const $listDiv = $('<div class="listItem">');
                                 $listDiv.text(`제목:${data.title}`);
                                 $listDiv.on('click', e => {
                                     e.stopPropagation(); //버블링 차단
                                     const selData = { ...data };
                                     $('#popup2').addClass('hide');
-                                    this.addModal(selData, memeArr[a]);
+                                    addModal(selData, memeArr[a]);
                                 });
                                 $listHtml.append($listDiv);
                             }
                             $('#popup2 .allList').html($listHtml);
                             $('#popup2').removeClass('hide');
-                            console.log(memeArr);
+                            // console.log(memeArr);
                         });
                     }
                 });
@@ -641,7 +506,7 @@ class View {
                             const selData = { ...saveData[saveIdx] };
 
                             // console.log(selData);
-                            this.addModal(selData, saveIdx);
+                            addModal(selData, saveIdx);
                         });
                     }
                 });

@@ -10,19 +10,14 @@ window.moment = moment;
 //         color : ''
 //     }
 // };
-
-let saveData = localStorage.getItem('saveData');
-if (!saveData) {
-    localStorage.setItem('saveData', JSON.stringify([]));
-    saveData = [];
-} else saveData = JSON.parse(saveData);
-const now = moment()
-    .hour(0)
-    .minute(0)
-    .second(0)
-    .millisecond(0);
 class Model {
-    constructor() {
+    constructor(saveData) {
+        // console.log(saveData);
+        const now = moment()
+            .hour(0)
+            .minute(0)
+            .second(0)
+            .millisecond(0);
         //initState
         this.state = {
             saveData,
